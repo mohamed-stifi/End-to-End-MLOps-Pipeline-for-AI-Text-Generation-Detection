@@ -1,0 +1,42 @@
+artifacts_root: artifacts
+mlflow_tracking_uri: "mlruns" # Can be local dir or remote like http://localhost:5000 or DagsHub
+
+data_ingestion:
+  root_dir: artifacts/data_ingestion
+  source_URL: "https://www.kaggle.com/api/v1/datasets/download/shanegerami/ai-vs-human-text" 
+  local_data_file: artifacts/data_ingestion/data.zip
+  unzip_dir: artifacts/data_ingestion/extracted_data
+  main_csv_file_name: "AI_Vs_Human_Full.csv" # Name of the main CSV file within the zip
+
+data_validation:
+  root_dir: artifacts/data_validation
+  data_dir: artifacts/data_ingestion # Directory to check for ingested file
+  status_file: artifacts/data_validation/status.txt
+  required_files: ["artifacts/data_ingestion/extracted_data/AI_Human.csv"] # Validates the output of data_ingestion stage
+
+data_transformation:
+  root_dir: artifacts/data_transformation
+  data_path: artifacts/data_ingestion/extracted_data/AI_Human.csv # Input from data_ingestion
+  # tokenizer_name will come from params.yaml
+
+model_trainer:
+  root_dir: artifacts/model_trainer
+  data_path: artifacts/data_transformation # Input from data_transformation (contains train/val/test.csv and encodings)
+  # model_name from config.model_trainer.model_name is not heavily used if train_all_models is called.
+  # It could be used if a single model training pipeline stage is defined.
+  model_name: "bert-base-uncased" # Example, actual model types are looped in train_all_models
+
+model_evaluation:
+  root_dir: artifacts/model_evaluation
+  data_path: artifacts/data_transformation # For test data (CSVs and encodings)
+  # model_path: artifacts/model_trainer # To load models and comparison_report.json
+  metric_file_name: artifacts/model_evaluation/evaluation_report.json
+  comparison_file: artifacts/model_trainer/model_comparison.json        ## results of trian_all_models in ModelTrainer compenante
+  # mlflow_uri will be taken from the global mlflow_tracking_uri
+
+
+hyperparameter_optimization:
+  root_dir: artifacts/hyperparameter_optimization
+  data_path: artifacts/data_transformation # Where train/val data is
+  model_types_to_tune: ["lstm", "bert", "roberta"] # Or specify one, e.g., ["bert"]
+  # Other HPO settings like n_trials, metric, direction will come from params.yaml

@@ -1,0 +1,55 @@
+# Docker ignore for the Python MLOps backend/consumer
+
+# Python virtual environment
+pfa-venv/
+**/pfa-venv/
+
+# Node.js frontend project (built separately)
+mlops-frontend/
+**/mlops-frontend/
+
+# Git
+.git/
+**/.git/
+.gitignore
+**/.gitignore
+
+# Python bytecode and caches
+__pycache__/
+**/*__pycache__/
+**/*.pyc
+**/*.pyo
+.pytest_cache/
+**/.pytest_cache/
+*.egg-info/
+**/*.egg-info/
+
+# IDE / OS specific
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Large data/artifact directories - these should be volume-mounted, not part of the image
+# If you absolutely need some initial artifacts IN the image, copy them selectively in Dockerfile
+# Otherwise, ignore them here.
+artifacts
+mlruns/
+# logs/ # Logs are usually generated runtime, but if you have large pre-existing, ignore.
+
+# Notebooks (usually not needed in production image)
+notebooks/
+
+# Temporary or test files
+*.log # If you don't want existing log files in the image
+test.py # Example if it's a scratch file
+
+# Other large files or directories not needed in the image
+nginx/ # If not part of the app image
+*.zip # If data.zip is large and only used for initial setup and then ignored
+
+# Ensure setup.py, requirements.txt, and source code (src, api, main.py, config) ARE NOT ignored
+# The .dockerignore works by exclusion, so if a parent is ignored, children are too unless explicitly un-ignored
+# (which is complex). It's better to ignore specific large/unneeded top-level items.

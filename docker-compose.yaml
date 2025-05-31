@@ -1,0 +1,123 @@
+services:
+  zookeeper: # Kafka depends on Zookeeper
+    image: confluentinc/cp-zookeeper:7.3.2 # Use a compatible version
+    container_name: zookeeper
+    hostname: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.3.2 # Use a compatible version
+    container_name: kafka
+    hostname: kafka
+    ports:
+      - "9092:9092" # External port for development
+      - "29092:29092" # Internal port for services within Docker network
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1 # For Confluent images
+      KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1 # For Confluent images
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_CREATE_TOPICS: "${KAFKA_TASKS_TOPIC_ENV:-mlops_tasks}:1:1,${KAFKA_TASK_STATUS_TOPIC_ENV:-mlops_task_status}:1:1" # Auto-create topics
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # For some Kafka internal operations if needed
+
+  app: # FastAPI backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: text_classifier_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src
+      - ./api:/app/api
+      - ./config:/app/config
+      - ./main.py:/app/main.py
+      - ./artifacts:/app/artifacts
+      - ./mlruns:/app/mlruns
+      - ./logs:/app/logs
+      #- ./entrypoint.sh:/entrypoint.sh
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow_server:5000
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # Use internal Kafka address
+      - KAFKA_TASKS_TOPIC_ENV=${KAFKA_TASKS_TOPIC_ENV:-mlops_tasks}
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - mlflow_server
+      - kafka
+    command: ["api"]
+
+  mlops_consumer: # Service for the Kafka consumer
+    build:
+      context: .
+      dockerfile: Dockerfile # Uses the same Dockerfile as 'app'
+    container_name: text_classifier_consumer
+    volumes: # Same volumes as 'app' to access pipeline code and artifacts
+      - ./src:/app/src
+      - ./api:/app/api
+      - ./config:/app/config
+      - ./main.py:/app/main.py
+      - ./artifacts:/app/artifacts
+      - ./mlruns:/app/mlruns # Needs access to log to MLflow if pipelines do
+      - ./logs:/app/logs
+      #- ./entrypoint.sh:/entrypoint.sh 
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow_server:5000 # If consumer needs to log to MLflow
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # Use internal Kafka address
+      - KAFKA_TASKS_TOPIC_ENV=${KAFKA_TASKS_TOPIC_ENV:-mlops_tasks}
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - kafka
+      - mlflow_server # If consumer logs to MLflow
+    command: ["python", "src/text_classifier/kafka_consumer_service.py"] # Command to run the consumer
+    restart: always # Restart if it crashes
+    
+  mlflow_server:
+    image: ghcr.io/mlflow/mlflow:v2.10.2 # Use a recent MLflow version
+    container_name: mlflow_tracking_server
+    ports:
+      - "5000:5000" # MLflow UI
+    volumes:
+      - ./mlruns:/mlruns # Mount the same mlruns directory as the app service
+      # You can also use a named volume for better persistence:
+      # - mlflow_data:/mlruns
+    command: >
+      mlflow server
+      --backend-store-uri file:///mlruns
+      --default-artifact-root file:///mlruns
+      --host 0.0.0.0
+      --port 5000
+    restart: always
+
+  frontend: # service for Next.js frontend
+    build:
+      context: ./mlops-frontend # Path to frontend project
+      dockerfile: Dockerfile    # Dockerfile 
+    container_name: mlops_frontend_app
+    ports:
+      - "3000:3000" # Expose frontend on port 3000
+    environment:
+      - NODE_ENV=production
+      - PORT=3000 # Next.js server will listen on this port inside the container
+      # This URL needs to point to your FastAPI backend service as accessible from the frontend container
+      # If both are in the same docker-compose network, you can use the service name:
+      - NEXT_PUBLIC_API_BASE_URL=http://app:8000
+    depends_on:
+      - app # Frontend depends on the backend API
+    restart: unless-stopped
+
+# Optional: Define a named volume if you prefer over bind mounts for mlruns persistence
+# volumes:
+#  mlflow_data:

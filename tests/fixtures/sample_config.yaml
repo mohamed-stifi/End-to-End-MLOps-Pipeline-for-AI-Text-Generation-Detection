@@ -1,0 +1,35 @@
+artifacts_root: "test_artifacts" # Use a test-specific root
+mlflow_tracking_uri: "file:///tmp/test_mlruns"
+
+data_ingestion:
+  root_dir: test_artifacts/data_ingestion
+  source_URL: "https://example.com/dummy_data.zip" # Will be mocked or overridden
+  local_data_file: test_artifacts/data_ingestion/data.zip
+  unzip_dir: test_artifacts/data_ingestion/extracted_data
+  main_csv_file_name: "dummy_data.csv"
+
+data_validation:
+  root_dir: test_artifacts/data_validation
+  status_file: test_artifacts/data_validation/status.txt
+  required_files: ["test_artifacts/data_ingestion/extracted_data/dummy_data.csv"]
+
+data_transformation:
+  root_dir: test_artifacts/data_transformation
+  data_path: test_artifacts/data_ingestion/extracted_data/dummy_data.csv
+  # tokenizer_name from params
+
+model_trainer:
+  root_dir: test_artifacts/model_trainer
+  data_path: test_artifacts/data_transformation
+  model_name: "bert-base-uncased"
+
+model_evaluation:
+  root_dir: test_artifacts/model_evaluation
+  data_path: test_artifacts/data_transformation
+  metric_file_name: test_artifacts/model_evaluation/evaluation_report.json
+  comparison_file: test_artifacts/model_trainer/model_comparison.json
+
+hyperparameter_optimization:
+  root_dir: test_artifacts/hyperparameter_optimization
+  data_path: test_artifacts/data_transformation
+  model_types_to_tune: ["lstm"]

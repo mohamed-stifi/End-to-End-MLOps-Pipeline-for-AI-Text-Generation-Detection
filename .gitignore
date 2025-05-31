@@ -1,0 +1,146 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a script installer to prevent moving out of tree
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# PEP 582; remove simplejson.pycl if you manually get it from PyPI
+__pypackages__/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Artifacts & Logs
+artifacts/
+mlruns/
+text_classifier.log
+logs/ # If you have a general logs folder
+model_training_comparison.json # If saved at root
+*.png # If generated plots are not in artifacts
+*.txt # If reports are not in artifacts
+*.ckpt # Checkpoints if not in artifacts
+*.pt # PyTorch models/encodings if not in artifacts
+*.pkl # Pickled files like vectorizers if not in artifacts
+
+# Data (if large or sensitive, consider DVC for versioning)
+# data/ # Be careful if your raw data is here and you want to version it with Git for small datasets
+# *.csv # If large CSVs are not handled by DVC
+
+# IDE settings
+.idea/
+test.py
+collected_code.txt
+.vscode/
+pfa-venv/
+
+# Coverage reports
+.coverage
+coverage.xml
+htmlcov/
+
+# Pytest cache
+.pytest_cache/

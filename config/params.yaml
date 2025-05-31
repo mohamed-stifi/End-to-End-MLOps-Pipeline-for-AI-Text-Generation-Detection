@@ -1,0 +1,87 @@
+# Global parameters
+MAX_LENGTH: 512
+BATCH_SIZE: 16 # Adjusted for potentially larger models; can be tuned
+TEST_SIZE: 0.2
+VAL_SIZE: 0.1 # Proportion of the (1 - TEST_SIZE) part
+TOKENIZER_NAME: "bert-base-uncased" # Default tokenizer for BERT/RoBERTa in DataTransformation
+
+# LSTM specific (can be extended)
+LSTM:
+  embedding_dim: 128
+  hidden_dim: 256
+  num_layers: 2
+  dropout: 0.3
+  learning_rate: 0.001 # Typical LR for LSTMs
+  num_epochs: 10 # Can be overridden by TrainingArguments
+
+# BERT specific (can be extended)
+BERT:
+  model_name: "bert-base-uncased"
+  dropout: 0.1
+  learning_rate: 2.0e-5
+  num_epochs: 3 # Transformers usually need fewer epochs
+
+# RoBERTa specific (can be extended)
+RoBERTa:
+  model_name: "roberta-base"
+  dropout: 0.1
+  learning_rate: 2.0e-5
+  num_epochs: 3
+
+# Common Training Arguments for PyTorch Lightning Trainer (used by ModelTrainerConfig)
+# These will be used by default but can be overridden by model-specific params if logic is added
+TrainingArguments:
+  num_train_epochs: 5 # Default for all, can be overridden by LSTM.num_epochs etc. in trainer
+  warmup_ratio: 0.1
+  per_device_train_batch_size: 16 # Overrides global BATCH_SIZE for training
+  per_device_eval_batch_size: 16  # Overrides global BATCH_SIZE for eval
+  weight_decay: 0.01
+  logging_steps: 10
+  evaluation_strategy: "epoch" # Or "steps"
+  eval_steps: 500 # If evaluation_strategy is "steps"
+  save_steps: 500
+  gradient_accumulation_steps: 1
+  learning_rate: 2.0e-5 # Default, can be overridden by specific model LR
+
+
+
+HyperparameterOptimization:
+  n_trials: 15 # Number of trials per model type
+  metric_to_optimize: "val_acc" # Metric reported by PyTorch Lightning model's validation_step
+  direction: "maximize"       # "maximize" for accuracy, "minimize" for loss
+  study_name_prefix: "text_classifier_hpo"
+  
+  # Common Pytorch Lightning Trainer args for HPO trials (can be overridden)
+  trainer_hpo_config:
+    max_epochs: 3             # Fewer epochs for faster HPO trials
+    log_every_n_steps: 50
+    enable_checkpointing: False
+    enable_progress_bar: True
+    enable_model_summary: False
+    # accelerator: "gpu" # If GPU is available
+    # devices: 1
+
+  hpo_params_ranges:
+    lstm:
+      learning_rate: {type: "float", low: 1.0e-4, high: 1.0e-2, log: True}
+      embedding_dim: {type: "categorical", choices: [64, 128, 256]}
+      hidden_dim: {type: "categorical", choices: [128, 256, 512]}
+      num_layers: {type: "int", low: 1, high: 3}
+      dropout: {type: "float", low: 0.1, high: 0.5}
+      # Note: For LSTM, vocab_size is fixed by data, not tuned.
+      # For PyTorch Lightning Trainer specific params if needed per trial:
+      # pl_max_epochs: {type: "int", low: 2, high: 5} # Example if you want to tune epochs too
+
+    bert: # For BERTClassifier (bert-base-uncased)
+      learning_rate: {type: "float", low: 1.0e-5, high: 1.0e-4, log: True}
+      dropout: {type: "float", low: 0.05, high: 0.3}
+      # warmup_steps_ratio: {type: "float", low: 0.0, high: 0.2} # Already in main config, but can be tuned
+      # For PyTorch Lightning Trainer specific params if needed per trial:
+      # pl_max_epochs: {type: "int", low: 1, high: 3}
+
+    roberta: # For RoBERTaClassifier (roberta-base)
+      learning_rate: {type: "float", low: 1.0e-5, high: 1.0e-4, log: True}
+      dropout: {type: "float", low: 0.05, high: 0.3}
+      # warmup_steps_ratio: {type: "float", low: 0.0, high: 0.2}
+      # For PyTorch Lightning Trainer specific params if needed per trial:
+      # pl_max_epochs: {type: "int", low: 1, high: 3}
