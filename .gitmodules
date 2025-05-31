@@ -1,0 +1,3 @@
+[submodule "mlops-frontend"]
+	path = mlops-frontend
+	url = https://github.com/mohamed-stifi/FrontEnd-of-End-to-End-MLOps-Pipeline-for-AI-Text-Generation-Detection.git
