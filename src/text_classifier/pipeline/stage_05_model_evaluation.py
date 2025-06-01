@@ -1,6 +1,7 @@
 from text_classifier.config.configuration import ConfigurationManager
 from text_classifier.components.model_evaluation import ModelEvaluation
 from text_classifier import logger
+from text_classifier.components.model_trainer import TextDataset, ModelTrainer
 
 STAGE_NAME = "Model Evaluation Stage"
 
@@ -14,8 +15,14 @@ class ModelEvaluationPipeline:
             config_manager = ConfigurationManager()
             model_evaluation_config = config_manager.get_model_evaluation_config()
             
+            model_trainer_config = config_manager.get_model_trainer_config()
+
+            model_trainer = ModelTrainer(model_trainer_config)
+
+
+            data_loader_fun = model_trainer.prepare_data_loaders
             model_evaluator = ModelEvaluation(config=model_evaluation_config)
-            evaluation_report = model_evaluator.evaluate_all_trained_models()
+            evaluation_report = model_evaluator.evaluate_all_models(data_loader_fun)
             
             if evaluation_report:
                 logger.info(f"Model evaluation complete. Report generated: {model_evaluation_config.metric_file_name}")

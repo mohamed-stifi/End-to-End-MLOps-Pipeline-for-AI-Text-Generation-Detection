@@ -64,14 +64,14 @@ class HyperparameterOptimizer:
                 learning_rate=suggest_param("learning_rate", param_ranges) or 2e-5,
                 dropout=suggest_param("dropout", param_ranges) or 0.1,
                 # warmup_steps_ratio could also be tuned
-                warmup_steps_ratio=suggest_param("warmup_steps_ratio", param_ranges) or 0.1
+                #warmup_steps_ratio=suggest_param("warmup_steps_ratio", param_ranges) or 0.1
             )
         elif model_type == "roberta":
             return RoBERTaClassifier(
                 model_name=self.config.hpo_params_ranges.get(model_type, {}).get("model_name", "roberta-base"),
                 learning_rate=suggest_param("learning_rate", param_ranges) or 2e-5,
                 dropout=suggest_param("dropout", param_ranges) or 0.1,
-                warmup_steps_ratio=suggest_param("warmup_steps_ratio", param_ranges) or 0.1
+                #warmup_steps_ratio=suggest_param("warmup_steps_ratio", param_ranges) or 0.1
             )
         else:
             raise ValueError(f"Unsupported model type for HPO: {model_type}")
@@ -133,8 +133,8 @@ class HyperparameterOptimizer:
             val_encodings = lstm_text_to_encoding(data_transform_path / "val.csv", max_len_lstm)
 
         else: # For BERT/RoBERTa
-            train_encodings = torch.load(data_transform_path / "train_encodings.pt")
-            val_encodings = torch.load(data_transform_path / "val_encodings.pt")
+            train_encodings = torch.load(data_transform_path / "train_encodings.pt", weights_only=False)
+            val_encodings = torch.load(data_transform_path / "val_encodings.pt", weights_only=False)
 
         train_dataset = TextDataset(train_encodings)
         val_dataset = TextDataset(val_encodings)

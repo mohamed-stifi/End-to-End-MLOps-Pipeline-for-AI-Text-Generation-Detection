@@ -13,6 +13,7 @@ from torch.serialization import safe_globals
 from transformers.tokenization_utils_base import BatchEncoding
 import pandas as pd
 import numpy as np
+from pathlib import Path
 from text_classifier import logger
 from text_classifier.entity.config_entity import ModelTrainerConfig
 from text_classifier.models import LSTMClassifier, BERTClassifier, RoBERTaClassifier
@@ -67,8 +68,11 @@ class ModelTrainer:
             vectorizer.fit(train_df['text'])
 
             # Save the fitted vectorizer
-            vectorizer_path = self.config.root_dir + "/lstm/vectorizer.pkl"
-            joblib.dump(vectorizer, vectorizer_path)
+            print("path")
+            lstm_dir = Path(self.config.root_dir) / "lstm"
+            lstm_dir.mkdir(parents=True, exist_ok=True)
+
+            joblib.dump(vectorizer, lstm_dir / "vectorizer.pkl")
 
 
 
@@ -174,7 +178,7 @@ class ModelTrainer:
             # Set up MLflow logger
             mlf_logger = MLFlowLogger(
                 experiment_name=f"text_classification_{model_name}",
-                tracking_uri="mlruns"                                   # os.getenv("MLFLOW_TRACKING_URI") when use docker compose
+                tracking_uri= os.getenv("MLFLOW_TRACKING_URI","mlruns")                                   # os.getenv("MLFLOW_TRACKING_URI") when use docker compose
             )
             
             # Set up callbacks

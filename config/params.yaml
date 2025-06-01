@@ -1,6 +1,6 @@
 # Global parameters
 MAX_LENGTH: 512
-BATCH_SIZE: 16 # Adjusted for potentially larger models; can be tuned
+BATCH_SIZE: 4 # Adjusted for potentially larger models; can be tuned
 TEST_SIZE: 0.2
 VAL_SIZE: 0.1 # Proportion of the (1 - TEST_SIZE) part
 TOKENIZER_NAME: "bert-base-uncased" # Default tokenizer for BERT/RoBERTa in DataTransformation
@@ -33,20 +33,20 @@ RoBERTa:
 TrainingArguments:
   num_train_epochs: 5 # Default for all, can be overridden by LSTM.num_epochs etc. in trainer
   warmup_ratio: 0.1
-  per_device_train_batch_size: 16 # Overrides global BATCH_SIZE for training
-  per_device_eval_batch_size: 16  # Overrides global BATCH_SIZE for eval
+  per_device_train_batch_size: 4 # Overrides global BATCH_SIZE for training
+  per_device_eval_batch_size: 14  # Overrides global BATCH_SIZE for eval
   weight_decay: 0.01
-  logging_steps: 10
+  logging_steps: 2
   evaluation_strategy: "epoch" # Or "steps"
-  eval_steps: 500 # If evaluation_strategy is "steps"
-  save_steps: 500
+  eval_steps: 4 # If evaluation_strategy is "steps"
+  save_steps: 5
   gradient_accumulation_steps: 1
   learning_rate: 2.0e-5 # Default, can be overridden by specific model LR
 
 
 
 HyperparameterOptimization:
-  n_trials: 15 # Number of trials per model type
+  n_trials: 5 # Number of trials per model type
   metric_to_optimize: "val_acc" # Metric reported by PyTorch Lightning model's validation_step
   direction: "maximize"       # "maximize" for accuracy, "minimize" for loss
   study_name_prefix: "text_classifier_hpo"
@@ -54,7 +54,7 @@ HyperparameterOptimization:
   # Common Pytorch Lightning Trainer args for HPO trials (can be overridden)
   trainer_hpo_config:
     max_epochs: 3             # Fewer epochs for faster HPO trials
-    log_every_n_steps: 50
+    log_every_n_steps: 10
     enable_checkpointing: False
     enable_progress_bar: True
     enable_model_summary: False
