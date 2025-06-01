@@ -144,3 +144,4 @@ htmlcov/
 
 # Pytest cache
 .pytest_cache/
+artifact*/

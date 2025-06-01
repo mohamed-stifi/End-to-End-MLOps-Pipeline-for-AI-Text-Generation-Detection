@@ -20,6 +20,7 @@ nltk.download('stopwords', quiet=True)
 class DataTransformation:
     def __init__(self, config: DataTransformationConfig):
         self.config = config
+        self.df = pd.read_csv(config.data_path)
         self.tokenizer = AutoTokenizer.from_pretrained(config.tokenizer_name)
         
         # Initialize stopwords
@@ -209,9 +210,11 @@ class DataTransformation:
         
         logger.info("Data processing completed and saved successfully!")
 
-    def transform_data(self, df):
+    def transform_data(self, df=None):
         """Main transformation pipeline"""
         try:
+            if df is None: 
+                df = self.df
             # Preprocess text
             df_processed = self.preprocess_text(df)
             

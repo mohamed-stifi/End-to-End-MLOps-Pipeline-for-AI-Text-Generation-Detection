@@ -4,7 +4,7 @@ from text_classifier.pipeline.stage_02_data_validation import DataValidationPipe
 from text_classifier.pipeline.stage_03_data_transformation import DataTransformationPipeline
 from text_classifier.pipeline.stage_04_model_trainer import ModelTrainingPipeline
 from text_classifier.pipeline.stage_05_model_evaluation import ModelEvaluationPipeline
-from text_classifier.pipeline.stage_06_hyperparameter_optimization import HyperparameterOptimizationPipeline # New import
+from text_classifier.pipeline.stage_06_hyperparameter_optimization import HyperparameterOptimizationPipeline 
 import argparse
 
 stages = {

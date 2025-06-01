@@ -19,7 +19,7 @@ class DataIngestionPipeline:
             data_ingester.extract_zip_file() # Step 2: Extract
             saved_csv_path = data_ingester.load_and_validate_data() # Step 3: Load, basic validate, save main CSV
             
-            logger.info(f"Main dataset processed and saved at: {saved_csv_path}")
+            # logger.info(f"Main dataset processed and saved at: {saved_csv_path}")
             logger.info(f">>>>>> Stage: {STAGE_NAME} completed successfully <<<<<<\n\nx==========x")
         except Exception as e:
             logger.error(f"Error in {STAGE_NAME}: {e}", exc_info=True)

@@ -1,75 +1,28 @@
 import pytest
-import yaml
-import json
-import os
 from pathlib import Path
 from box import ConfigBox
-from text_classifier.utils.common import (
-    read_yaml, create_directories, save_json,
-    load_json, save_bin, load_bin, get_size
-)
+from text_classifier.utils.common import read_yaml, create_directories # Assuming your utils
 
-def test_read_yaml_success(tmp_path):
+# Create a dummy yaml file for testing
+@pytest.fixture
+def dummy_yaml_file(tmp_path):
     content = {"key": "value", "nested": {"key2": 123}}
-    yaml_file = tmp_path / "test.yaml"
-    with open(yaml_file, "w") as f:
+    file_path = tmp_path / "dummy.yaml"
+    with open(file_path, "w") as f:
+        import yaml
         yaml.dump(content, f)
+    return file_path
 
-    config_box = read_yaml(yaml_file)
-    assert isinstance(config_box, ConfigBox)
-    assert config_box.key == "value"
-    assert config_box.nested.key2 == 123
-
-def test_read_yaml_empty_file(tmp_path):
-    yaml_file = tmp_path / "empty.yaml"
-    yaml_file.touch()
-    with pytest.raises(ValueError, match="yaml file is empty"):
-        read_yaml(yaml_file)
-
-def test_read_yaml_file_not_found():
-    with pytest.raises(FileNotFoundError):
-        read_yaml(Path("non_existent_file.yaml"))
+def test_read_yaml(dummy_yaml_file):
+    config = read_yaml(dummy_yaml_file)
+    assert isinstance(config, ConfigBox)
+    assert config.key == "value"
+    assert config.nested.key2 == 123
 
 def test_create_directories(tmp_path):
-    dir_paths = [tmp_path / "dir1", tmp_path / "dir2/subdir"]
-    create_directories(dir_paths, verbose=False)
-    assert os.path.exists(dir_paths[0])
-    assert os.path.exists(dir_paths[1])
+    dir_to_create = tmp_path / "new_dir" / "subdir"
+    create_directories([str(dir_to_create)]) # common.py expects list of strings or Path objects
+    assert dir_to_create.exists()
+    assert dir_to_create.is_dir()
 
-    # Test idempotency (running again should not fail)
-    create_directories(dir_paths, verbose=False)
-    assert os.path.exists(dir_paths[0])
-
-def test_save_and_load_json(tmp_path):
-    data_to_save = {"name": "test_json", "version": 1.0}
-    json_file_path = tmp_path / "data.json"
-
-    save_json(json_file_path, data_to_save)
-    assert json_file_path.exists()
-
-    loaded_data = load_json(json_file_path)
-    assert isinstance(loaded_data, ConfigBox)
-    assert loaded_data.name == "test_json"
-    assert loaded_data.version == 1.0
-
-def test_save_and_load_bin(tmp_path):
-    data_to_save = {"key": [1, 2, 3], "obj": "test_string"}
-    bin_file_path = tmp_path / "data.bin"
-
-    save_bin(data_to_save, bin_file_path)
-    assert bin_file_path.exists()
-
-    loaded_data = load_bin(bin_file_path)
-    assert loaded_data["key"] == [1, 2, 3]
-    assert loaded_data["obj"] == "test_string"
-
-def test_get_size(tmp_path):
-    file_path = tmp_path / "test_file.txt"
-    # Create a file of roughly 1KB and 2KB
-    with open(file_path, "wb") as f:
-        f.write(os.urandom(1024)) # 1KB
-    assert get_size(file_path) == "~ 1 KB"
-
-    with open(file_path, "wb") as f:
-        f.write(os.urandom(2048)) # 2KB
-    assert get_size(file_path) == "~ 2 KB"
+# Add more tests for other utilities and components

@@ -53,3 +53,4 @@ nginx/ # If not part of the app image
 # Ensure setup.py, requirements.txt, and source code (src, api, main.py, config) ARE NOT ignored
 # The .dockerignore works by exclusion, so if a parent is ignored, children are too unless explicitly un-ignored
 # (which is complex). It's better to ignore specific large/unneeded top-level items.
+artifact*/

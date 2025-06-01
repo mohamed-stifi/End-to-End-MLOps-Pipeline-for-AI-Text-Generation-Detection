@@ -32,6 +32,18 @@ class DataIngestion:
         with zipfile.ZipFile(self.config.local_data_file, 'r') as zip_ref:
             zip_ref.extractall(unzip_path)
 
+        csv_files = list(Path(self.config.unzip_dir).glob("*.csv"))
+        data_path = csv_files[0]  # Take the first CSV file
+        df = pd.read_csv(data_path)
+
+        if self.config.max_sample_number < df.shape[0]:
+            df_c1 = df[df['generated'] == 1.0][:self.config.max_sample_number]
+            df_c0 = df[df['generated'] == 0.0][:self.config.max_sample_number + 10]
+
+            df_subset = pd.concat([df_c1, df_c0], ignore_index=True)
+
+            df_subset.to_csv(data_path)
+
     def load_and_validate_data(self):
         """Load and validate the dataset"""
         try:

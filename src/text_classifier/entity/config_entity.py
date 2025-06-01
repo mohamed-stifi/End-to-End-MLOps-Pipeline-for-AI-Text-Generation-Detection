@@ -8,6 +8,7 @@ class DataIngestionConfig:
     source_url: str
     local_data_file: Path
     unzip_dir: Path
+    max_sample_number: int
 
 @dataclass
 class DataValidationConfig:

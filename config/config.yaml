@@ -7,6 +7,7 @@ data_ingestion:
   local_data_file: artifacts/data_ingestion/data.zip
   unzip_dir: artifacts/data_ingestion/extracted_data
   main_csv_file_name: "AI_Vs_Human_Full.csv" # Name of the main CSV file within the zip
+  max_sample_number: 30
 
 data_validation:
   root_dir: artifacts/data_validation
