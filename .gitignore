@@ -145,4 +145,6 @@ htmlcov/
 # Pytest cache
 .pytest_cache/
 artifact*/
+artifact*
 mlruns*
+test_mlops_pipelines.py
